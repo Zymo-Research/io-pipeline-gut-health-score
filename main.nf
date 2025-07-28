@@ -134,20 +134,26 @@ workflow Q2_PREDICT {
         humann_input = metaphlan_channel
             .join(trimmed_reads, by: 0)
             .map { joined ->
-            def prefix = joined[0]
-            def metaphlan_profile = joined[1]
-            def read1 = joined[2]
-            def read2 = (joined.size() == 4) ? joined[3] : file('/dev/null')
-            tuple(prefix, read1, read2, metaphlan_profile, file(params.database_location))
+                def prefix = joined[0]
+                def metaphlan_profile = joined[1]
+                def read1 = joined[2]
+                def read2 = (joined.size() == 4) ? joined[3] : null
+                def meta = [id: prefix, single_end: (read2 == null)]
+                def input_files = (read2 == null) ? [read1] : [read1, read2]
+                tuple(meta, input_files, metaphlan_profile)
             }
 
-        humann_result = RUN_HUMANN(humann_input)
+        humann_result = RUN_HUMANN(
+            humann_input, 
+            file(params.nucleotide_db), 
+            file(params.protein_db)
+        )
   
 
     emit:
-        humann_genefamilies  = humann_result.genefamilies
-        humann_pathabundance = humann_result.pathabundance
-        humann_pathcoverage  = humann_result.pathcoverage
+        humann_genefamilies  = humann_result.genefamilies.map { meta, path -> path }
+        humann_pathabundance = humann_result.pathabundance.map { meta, path -> path }
+        humann_pathcoverage  = humann_result.pathcoverage.map { meta, path -> path }
         trimmed_reads        = trimmed_reads
         metaphlan            = metaphlan_channel.map { it[1] }
 }
