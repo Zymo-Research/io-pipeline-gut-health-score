@@ -120,14 +120,15 @@ workflow Q2_PREDICT {
         metaphlan_input = trimmed_reads.map { tuple_data ->
             def prefix = tuple_data[0]
             def read1 = tuple_data[1]
-            def read2 = (tuple_data.size() == 3) ? tuple_data[2] : file('/dev/null')
-            tuple(prefix, read1, read2, file(params.metaphlan_db))
+            def read2 = (tuple_data.size() == 3) ? tuple_data[2] : null
+            def meta = [id: prefix, single_end: (read2 == null)]
+            def input_files = (read2 == null) ? [read1] : [read1, read2]
+            tuple(meta, input_files)
         }
 
-        metaphlan_channel = RUN_METAPHLAN(metaphlan_input).metaphlan_profile
-            .map { path -> 
-                def prefix = path.getName().replaceFirst(/_metaphlan\.txt$/, '')
-                tuple(prefix, path)
+        metaphlan_channel = RUN_METAPHLAN(metaphlan_input, file(params.metaphlan_db)).metaphlan_profile
+            .map { meta, path -> 
+                tuple(meta.id, path)
             }
 
         humann_input = metaphlan_channel
