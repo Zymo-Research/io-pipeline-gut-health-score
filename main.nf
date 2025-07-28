@@ -105,8 +105,11 @@ workflow RUN_TRIMGALORE {
 
 
 workflow Q2_PREDICT {
+
     take:
         prepared_input
+        nucleotide_db
+        protein_db
 
     main:
         // 1. Format input for TrimGalore
@@ -144,9 +147,9 @@ workflow Q2_PREDICT {
             }
 
         humann_result = RUN_HUMANN(
-            humann_input, 
-            file(params.nucleotide_db), 
-            file(params.protein_db)
+            humann_input,
+            nucleotide_db,
+            protein_db
         )
   
 
@@ -289,7 +292,11 @@ workflow FINAL_REPORT {
 // Top-level workflow invocation
 workflow {
     raw_sheet = Channel.fromPath(ch_design)
+
     PREPARATION_INPUT(raw_sheet)
+
+    Channel.fromPath(params.nucleotide_db).first().set { nucleotide_db }
+    Channel.fromPath(params.protein_db).first().set { protein_db }
 
     if (params.tool == 'gmwi2') {
         GMWI(PREPARATION_INPUT.out.prepared_input)
@@ -303,7 +310,7 @@ workflow {
         )
     }
     else if (params.tool == 'q2-predict') {
-        Q2_PREDICT(PREPARATION_INPUT.out.prepared_input)
+        Q2_PREDICT(PREPARATION_INPUT.out.prepared_input, nucleotide_db, protein_db)
         QIIME_METAPHLAN(Q2_PREDICT.out.metaphlan)
         Q2_PREP(
             Q2_PREDICT.out.humann_genefamilies,
