@@ -32,18 +32,6 @@ process RUN_HUMANN {
     def merged_input = !meta.single_end ? "${prefix}_merged.fastq" : "${prefix}_input.fastq"
 
     """
-    humann_config > pre-log.txt
-    humann_config \\
-        --update database_folders nucleotide $nucleotide_db
-
-    humann_config \\
-        --update database_folders protein $protein_db
-    
-    humann_config \\
-        --update database_folders utility_mapping $utilities_db
-    
-    humann_config > post-log.txt
-
     # Prepare input files
     if [ "${meta.single_end}" = "true" ]; then
         echo "Single-end input processing"
@@ -73,6 +61,8 @@ process RUN_HUMANN {
         --input \$input_file \\
         --input-format fastq \\
         --taxonomic-profile ${metaphlan_profile} \\
+        --nucleotide-database $nucleotide_db \\
+        --protein-database $protein_db \\
         --o-log "${prefix}.log" \\
         --output . \\
         --threads ${task.cpus}
