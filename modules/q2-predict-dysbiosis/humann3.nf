@@ -31,12 +31,14 @@ process RUN_HUMANN {
     def merged_input = !meta.single_end ? "${prefix}_merged.fastq" : "${prefix}_input.fastq"
 
     """
-    humann_config > log.txt
+    humann_config > pre-log.txt
     humann_config \\
         --update database_folders nucleotide $nucleotide_db
 
     humann_config \\
         --update database_folders protein $protein_db
+    
+    humann_config > post-log.txt
 
     # Prepare input files
     if [ "${meta.single_end}" = "true" ]; then
