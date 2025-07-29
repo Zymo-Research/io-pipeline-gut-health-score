@@ -147,9 +147,10 @@ workflow Q2_PREDICT {
             }
 
         humann_result = RUN_HUMANN(
-            humann_input,
-            nucleotide_db,
-            protein_db
+            humann_input, 
+            file(params.nucleotide_db), 
+            file(params.protein_db),
+            file(params.utilities_db)
         )
   
 

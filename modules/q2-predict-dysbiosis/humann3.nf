@@ -14,6 +14,7 @@ process RUN_HUMANN {
     tuple val(meta), path(input), path(metaphlan_profile)
     path nucleotide_db
     path protein_db
+    path utilities_db
 
     output:
     tuple val(meta), path("*_genefamilies.tsv"),  emit: genefamilies
@@ -37,6 +38,9 @@ process RUN_HUMANN {
 
     humann_config \\
         --update database_folders protein $protein_db
+    
+    humann_config \\
+        --update database_folders utility_mapping $utilities_db
     
     humann_config > post-log.txt
 
