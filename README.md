@@ -62,6 +62,24 @@ It integrates microbiome tools (*MetaPhlAn, HUMAnN, GMWI2, Q2-predict-dysbiosis*
 
 ---
 
+## 🔍 Inspecting Results
+
+After the pipeline completes, your main results will be in the output directory you specified (e.g., `.results/`). Key outputs include:
+
+- **GMWI2 scores:**  
+  - File: `final/gmwi2_scores_table.tsv`  
+  - Contains the Gut Microbiome Wellness Index 2 score for each sample.
+
+- **Q2-predict dysbiosis scores:**  
+  - File: `q2_predict_dysbiosis/dysbiosis_results.csv`  
+  - Contains the Q2-predict dysbiosis score for each sample (if you used `--tool q2-predict`).
+
+- **MetaPhlAn profiles:**  
+  - File: `metaphlan/<sample>_metaphlan.txt`  
+  - Contains the taxonomic profile (relative abundances) for each sample.
+
+---
+
 ## 🏆 Features
 
 - **End-to-end** gut microbiome scoring from raw reads
