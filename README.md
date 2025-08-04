@@ -80,15 +80,6 @@ After the pipeline completes, your main results will be in the output directory 
 
 ---
 
-## 🏆 Features
-
-- **End-to-end** gut microbiome scoring from raw reads
-- **Parallelized, scalable, and reproducible** with Nextflow
-- **Customizable** for local, cluster, or cloud environments
-- **Clear outputs** for downstream analysis and visualization
-
----
-
 ## 📖 References
 
 - [Nextflow](https://www.nextflow.io/docs/latest)
