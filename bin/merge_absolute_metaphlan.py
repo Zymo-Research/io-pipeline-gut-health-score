@@ -3,9 +3,10 @@ import argparse
 import pandas as pd
 import os
 
+
 def extract_ncbi_id(clade_taxid):
     try:
-        parts = str(clade_taxid).split('|')
+        parts = str(clade_taxid).split("|")
         # Get last non-empty numeric part
         for part in reversed(parts):
             if part.strip().isdigit():
@@ -14,31 +15,39 @@ def extract_ncbi_id(clade_taxid):
     except Exception:
         return -1
 
+
 def parse_input_files(file_paths):
     result = {}
     all_taxids = set()
 
     for path in file_paths:
-        sample_name = os.path.basename(path).split('_')[0]
-        df = pd.read_csv(path, sep='\t')
+        # Must use rsplit to handle names with underscores
+        sample_name = os.path.basename(path).rsplit("_", 1)[0]
+        df = pd.read_csv(path, sep="\t")
 
         # Normalize unclassified entries to behave like UNKNOWN
-        df['clade_name'] = df['clade_name'].fillna('')
-        df.loc[df['clade_name'].str.lower() == 'unclassified', 'clade_taxid'] = -1
-        df.loc[df['clade_name'].str.lower() == 'unclassified', 'clade_name'] = 'UNKNOWN'
+        df["clade_name"] = df["clade_name"].fillna("")
+        df.loc[df["clade_name"].str.lower() == "unclassified", "clade_taxid"] = -1
+        df.loc[df["clade_name"].str.lower() == "unclassified", "clade_name"] = "UNKNOWN"
 
         # Filter: keep only rows with "s__" or "UNKNOWN"
-        df = df[df['clade_name'].str.contains("s__") | (df['clade_name'] == "UNKNOWN")]
+        df = df[df["clade_name"].str.contains("s__") | (df["clade_name"] == "UNKNOWN")]
 
         # Extract standardized NCBI_ID
-        df['NCBI_ID'] = df['clade_taxid'].apply(extract_ncbi_id)
+        df["NCBI_ID"] = df["clade_taxid"].apply(extract_ncbi_id)
 
         # Aggregate by NCBI_ID
-        df = df.groupby('NCBI_ID')['estimated_number_of_reads_from_the_clade'].sum().reset_index()
-        df = df.rename(columns={'estimated_number_of_reads_from_the_clade': sample_name})
+        df = (
+            df.groupby("NCBI_ID")["estimated_number_of_reads_from_the_clade"]
+            .sum()
+            .reset_index()
+        )
+        df = df.rename(
+            columns={"estimated_number_of_reads_from_the_clade": sample_name}
+        )
 
-        result[sample_name] = df.set_index('NCBI_ID')[sample_name]
-        all_taxids.update(df['NCBI_ID'].values)
+        result[sample_name] = df.set_index("NCBI_ID")[sample_name]
+        all_taxids.update(df["NCBI_ID"].values)
 
     # Combine all results
     all_taxids = sorted(all_taxids)
@@ -48,19 +57,30 @@ def parse_input_files(file_paths):
         combined_df[sample] = series
 
     combined_df.fillna(0, inplace=True)
-    combined_df.index.name = 'NCBI_ID'
+    combined_df.index.name = "NCBI_ID"
     return combined_df.reset_index()
 
+
 def main():
-    parser = argparse.ArgumentParser(description='Aggregate species-level absolute abundance from MetaPhlAn outputs.')
-    parser.add_argument('-i', '--input', nargs='+', required=True, help='Input files separated by space')
-    parser.add_argument('-o', '--output', default='total_absolute_abundance.csv', help='Output file name')
+    parser = argparse.ArgumentParser(
+        description="Aggregate species-level absolute abundance from MetaPhlAn outputs."
+    )
+    parser.add_argument(
+        "-i", "--input", nargs="+", required=True, help="Input files separated by space"
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        default="total_absolute_abundance.csv",
+        help="Output file name",
+    )
 
     args = parser.parse_args()
 
     combined_df = parse_input_files(args.input)
-    combined_df.to_csv(args.output, sep=',', index=False)
+    combined_df.to_csv(args.output, sep=",", index=False)
     print(f"Saved combined table to: {args.output}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
