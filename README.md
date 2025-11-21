@@ -23,7 +23,7 @@ It integrates microbiome tools (*MetaPhlAn, HUMAnN, GMWI2, Q2-predict-dysbiosis*
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/lhsnam/io-gut-health.git
+   git clone https://github.com/Zymo-Research/io-gut-health
    cd io-gut-health
    ```
 2. **Install Nextflow** (if not already):
